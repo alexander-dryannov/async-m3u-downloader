@@ -9,6 +9,7 @@ verify_ssl = true
 aiohttp = "*"
 tqdm = "*"
 requests = "*"
+pipfile = "*"
 
 [requires]
 python_version = "3.8"

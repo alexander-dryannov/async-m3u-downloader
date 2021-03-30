@@ -83,7 +83,7 @@ class DownloaderM3U:
         self.create_folder(self.path_file_output)
 
         async with aiohttp.ClientSession() as session:
-            tasks = [self.asynchronous_file_upload(session, files[file], file) for file in files]
+            tasks = [self.asynchronous_file_upload(session, files[file], file + '.mp3') for file in files]
             await asyncio.gather(*tasks, return_exceptions=True)
 
     def main(self):
