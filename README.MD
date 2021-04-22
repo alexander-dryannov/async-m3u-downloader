@@ -25,10 +25,10 @@ pipenv install PipFile
 - [-o] -папка куда будут сохранены скаченные файлы
 ### Асинхронное скачивание
 ```sh
-python3 m3u-downloader -a /path/folder/file.m3u -o /path/to/save_folder
+python3 m3u-downloader.py -a /path/folder/file.m3u -o /path/to/save_folder
 ```
 
 ### Синхронное скачивание
 ```sh
-python3 m3u-downloader -s /path/folder/file.m3u -o /path/to/save_folder
+python3 m3u-downloader.py -s /path/folder/file.m3u -o /path/to/save_folder
 ```
