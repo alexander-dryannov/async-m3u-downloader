@@ -10,6 +10,7 @@ aiohttp = "*"
 tqdm = "*"
 requests = "*"
 pipfile = "*"
+Pipfile = "*"
 
 [requires]
 python_version = "3.8"

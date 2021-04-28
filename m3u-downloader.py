@@ -11,26 +11,16 @@ class DownloaderM3U:
     def __init__(self, path_file, path_file_output):
         self.path_file = path_file
         self.path_file_output = path_file_output
-        self._track_name = []
         self._url_track = []
 
-    """Подготовка словаря"""
-    @staticmethod
-    def dictionary_preparation(track_name, url_track):
-        dict_song = dict(zip(track_name, url_track))
-        return dict_song
-
-    """Подготовка списков"""
+    """Подготовка списка"""
     def preparation_of_lists(self):
         with open(self.path_file, 'r') as f:
             playlist = f.readlines()
         playlist = [a for a in playlist if a != '\n']
         for i in playlist[1:]:
-            if re.search('#EX', i):
-                self._track_name.append(i.split(',')[-1].split('\n')[0])
-            else:
+            if re.search('htt', i):
                 self._url_track.append(i.split('\n')[0])
-        return 0
 
     """Создание папки для загрузки и смена рабочей директории"""
     @staticmethod
@@ -41,26 +31,24 @@ class DownloaderM3U:
             os.mkdir(path_file_output)
             os.chdir(path_file_output)
 
-    """Получение словаря"""
-    def getting_dictionary(self):
-        self.preparation_of_lists()
-        return self.dictionary_preparation(self._track_name, self._url_track)
-
     """ Синхронный загрузчик файлов """
     def synchronous_file_upload(self):
-        files = self.getting_dictionary()
+        self.preparation_of_lists()
+        print(f'Файлов для загрузки {len(self._url_track)}\n')
         self.create_folder(self.path_file_output)
-        for file in files:
+        for file in self._url_track:
+            filename = file.split("/")[-1]
             try:
-                r = requests.get(files[file], stream=True)
+                r = requests.get(file, stream=True)
                 total_size = int(r.headers['content-length'])
-                with open(f'{file + "." + files[file].split(".")[-1]}', 'wb') as f:
-                    for data in tqdm(desc=file, iterable=r.iter_content(1024), total=int(total_size/1024),
+                with open(filename, 'wb') as f:
+                    for data in tqdm(desc=filename, iterable=r.iter_content(1024), total=int(total_size/1024),
                                      unit='KB', unit_scale=True,):
                         f.write(data)
             except OSError:
                 print('[-] Нет соединение с сервером')
                 break
+        print('\nЗагрузка завершена.')
 
     """ Асинхронный загрузчик """
     @staticmethod
@@ -79,22 +67,25 @@ class DownloaderM3U:
 
     """ Подготовка к асинхронному скачиванию """
     async def preparing_for_asynchronous_download(self):
-        files = self.getting_dictionary()
         self.create_folder(self.path_file_output)
 
         async with aiohttp.ClientSession() as session:
-            tasks = [self.asynchronous_file_upload(session, files[file], f'{file + "." + files[file].split(".")[-1]}') for file in files]
+            tasks = [self.asynchronous_file_upload(session, url, url.split('/')[-1]) for url in self._url_track]
             await asyncio.gather(*tasks, return_exceptions=True)
 
     def main(self):
+        self.preparation_of_lists()
+        print(f'Файлов для загрузки {len(self._url_track)}\n')
         asyncio.run(self.preparing_for_asynchronous_download())
+        print('\nЗагрузка завершена.')
 
 
 if __name__ == '__main__':
-    if len(sys.argv) < 5:
+    if len(sys.argv) < 6:
         print('[ - ] не хватает аргументов')
     else:
-        if sys.argv[1] == '-a' and sys.argv[3] == '-o':
-            DownloaderM3U(sys.argv[2], sys.argv[4]).main()
-        elif sys.argv[1] == '-s' and sys.argv[3] == '-o':
-            DownloaderM3U(sys.argv[2], sys.argv[4]).synchronous_file_upload()
+        print('\nНачало загрузки...\n')
+        if sys.argv[1] == '-a' and sys.argv[2] == '-i' and sys.argv[4] == '-o':
+            DownloaderM3U(sys.argv[3], sys.argv[5]).main()
+        elif sys.argv[1] == '-s' and sys.argv[2] == '-i' and sys.argv[4] == '-o':
+            DownloaderM3U(sys.argv[3], sys.argv[5]).synchronous_file_upload()
